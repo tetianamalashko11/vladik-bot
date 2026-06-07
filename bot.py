@@ -1,5 +1,7 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from flask import Flask
+import threading
 
 TOKEN = "8930741978:AAFpXGhOpbxb1zcppH32Ji2pxcymFYhDvgI"
 bot = telebot.TeleBot(TOKEN)
@@ -77,6 +79,20 @@ def checkout(call):
 def back_to_menu(call):
     start(call.message)
 
+# Запуск бота в отдельном потоке
+def run_bot():
+    bot.infinity_polling()
+
+# Заглушка для порта (чтобы Render не ругался)
+app = Flask(__name__)
+@app.route('/')
+def home():
+    return "Бот работает!"
+
 if __name__ == "__main__":
     print("Бот запущен!")
-    bot.infinity_polling()
+    # Запускаем бота в фоне
+    bot_thread = threading.Thread(target=run_bot)
+    bot_thread.start()
+    # Запускаем веб-сервер на порту 10000
+    app.run(host="0.0.0.0", port=10000)
